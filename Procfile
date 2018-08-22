@@ -1,1 +1,1 @@
-bot: python3 ConcertSetlistBot.by
+bot: python3 ConcertSetlistBot.py
