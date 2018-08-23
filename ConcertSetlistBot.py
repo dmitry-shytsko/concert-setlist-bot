@@ -268,9 +268,11 @@ def main():
                 elif message.lower() == '/help':
                     helpFile = open("help.html", "r")
                     botHandler.send_message(chatId, helpFile.read())
+                    helpFile.close()
                 elif message.lower() == '/whatsnew':
                     helpFile = open("whatsnew.html", "r")
                     botHandler.send_message(chatId, helpFile.read())
+                    helpFile.close()
                 else:
                     botHandler.send_message(chatId, "Sorry, this is an unknown command...")
             else:
