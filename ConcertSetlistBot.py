@@ -1,4 +1,3 @@
-import datetime
 import json
 import requests
 
@@ -245,24 +244,40 @@ def main():
         updatesIterator = iter(updates)
         for update in updatesIterator:
             chatId = update['message']['chat']['id']
-            artistName = update['message']['text']
+            message = update['message']['text'].strip()
             lastUpdateId = update['update_id']
             new_offset = lastUpdateId + 1
 
-            print(artistName)
+            if message is None or len(message) == 0:
+                continue
 
-            artistSetlists = Setlists(artistName)
-
-            if artistSetlists.code == 0:
-                artistSetlist = artistSetlists.getMostRecentSetlist()
-
-                if artistSetlist is None:
-                    botHandler.send_message(chatId, "None Found")
+            if message[0] == '/':
+                if message.lower() == '/start':
+                    botHandler.send_message(chatId, "Bot Started. Please send in the name of the artist or use "\
+                                                    "the /help command")
+                elif message.lower() == '/help':
+                    helpFile = open("help.html", "r")
+                    botHandler.send_message(chatId, helpFile.read())
+                elif message.lower() == '/whatsnew':
+                    helpFile = open("whatsnew.html", "r")
+                    botHandler.send_message(chatId, helpFile.read())
                 else:
-                    botHandler.send_message(chatId, artistSetlist.setlistAsHtml())
-
+                    botHandler.send_message(chatId, "Sorry, this is an unknown command...")
             else:
-                botHandler.send_message(chatId, artistSetlists.status)
+                print(message)
+
+                artistSetlists = Setlists(message)
+
+                if artistSetlists.code == 0:
+                    artistSetlist = artistSetlists.getMostRecentSetlist()
+
+                    if artistSetlist is None:
+                        botHandler.send_message(chatId, "None Found")
+                    else:
+                        botHandler.send_message(chatId, artistSetlist.setlistAsHtml())
+
+                else:
+                    botHandler.send_message(chatId, artistSetlists.status)
 
 
 if __name__ == '__main__':
