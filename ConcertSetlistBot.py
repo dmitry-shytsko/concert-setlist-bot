@@ -178,6 +178,16 @@ class Setlists:
         if len(self.setlists) > 0:
             return self.setlists[0]
 
+    def getMostRecentSetlists(self, count):
+        realCount = min(len(self.setlists), count)
+
+        setlists = []
+
+        for index in range(0, realCount):
+            setlists.append(self.setlists[index])
+
+        return setlists
+
 
 class TelegramHandler:
 
@@ -266,16 +276,29 @@ def main():
             else:
                 print(message)
 
-                artistSetlists = Setlists(message)
+                artistName = message
+                setlistCount = 1
+                params = message.split(' +')
+
+                if len(params) == 2:
+                    # noinspection PyBroadException
+                    try:
+                        setlistCount = int(params[1]) + 1
+                        artistName = params[0]
+                    except:
+                        pass
+
+                artistSetlists = Setlists(artistName)
 
                 if artistSetlists.code == 0:
-                    artistSetlist = artistSetlists.getMostRecentSetlist()
+                    setlistsToDisplay = artistSetlists.getMostRecentSetlists(setlistCount)
 
-                    if artistSetlist is None:
-                        botHandler.send_message(chatId, "None Found")
+                    if len(setlistsToDisplay) > 0:
+                        setlistsToDisplayIterator = iter(setlistsToDisplay)
+                        for setlistToDisplay in setlistsToDisplayIterator:
+                            botHandler.send_message(chatId, setlistToDisplay.setlistAsHtml())
                     else:
-                        botHandler.send_message(chatId, artistSetlist.setlistAsHtml())
-
+                        botHandler.send_message(chatId, "None Found")
                 else:
                     botHandler.send_message(chatId, artistSetlists.status)
 
