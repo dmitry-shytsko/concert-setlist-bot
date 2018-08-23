@@ -1,0 +1,13 @@
+{
+	"devMode": 1,
+	
+	"devConfig": {
+      "setlistFmKey": "f0d0f1f7-ddab-4562-a334-8ad7b76c2c7e",
+      "telegramKey": "627076582:AAFV8uNxN1MtplQlf2lYD5Pc9y1QJPaxcXI"
+	},
+	
+	"prodConfig": {
+      "setlistFmKey": "f0d0f1f7-ddab-4562-a334-8ad7b76c2c7e",
+      "telegramKey": "658104325:AAHe1V-0c2Tt0cjo1gKvJqHl15ppVmdng8M"
+	}
+}
