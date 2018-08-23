@@ -1,10 +1,9 @@
 import json
 import requests
 
-setlistFmUrl = 'https://api.setlist.fm/rest/1.0/search/setlists'
-setlistFmHeaders = {'x-api-key': 'f0d0f1f7-ddab-4562-a334-8ad7b76c2c7e', 'Accept': 'application/json'}
+import Config
 
-telegramKey = "658104325:AAHe1V-0c2Tt0cjo1gKvJqHl15ppVmdng8M"
+config = Config.Config()
 
 
 class SetlistSong:
@@ -149,6 +148,9 @@ class Setlists:
         self.code = 0
         self.artistName = artistName
 
+        setlistFmUrl = 'https://api.setlist.fm/rest/1.0/search/setlists'
+        setlistFmHeaders = {'x-api-key': config.setlistFmKey, 'Accept': 'application/json'}
+
         apiParams = {'artistName': artistName}
         apiResponse = requests.get(url=setlistFmUrl, params=apiParams, headers=setlistFmHeaders)
         apiJson = json.loads(apiResponse.text)
@@ -238,7 +240,7 @@ def testSetlistFm(artistName):
 
 
 def main():
-    botHandler = TelegramHandler(telegramKey)
+    botHandler = TelegramHandler(config.telegramKey)
 
     # Ignoring all pending updates before the start of the bot
     lastUpdate = botHandler.get_last_update()
