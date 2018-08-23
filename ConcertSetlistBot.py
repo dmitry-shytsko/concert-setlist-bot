@@ -46,7 +46,7 @@ class SetlistSong:
         postfix = ""
 
         if self.originalArtist is not None:
-            originalArtistTemplate = "<i> ({} song)</i>"
+            originalArtistTemplate = "<i>({} song)</i>"
             postfix = originalArtistTemplate.format(self.originalArtist)
 
         displayNameTemplate = "{}\t{} {}"
