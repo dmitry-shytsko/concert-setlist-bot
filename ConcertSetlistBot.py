@@ -2,10 +2,8 @@ import Config
 import Setlist
 import Telegram
 
-config = Config.Config()
 
-
-def testSetlistFm(artistName):
+def testSetlistFm(artistName, config):
     artistSetlists = Setlist.Setlists(artistName, config)
 
     if artistSetlists.code == 0:
@@ -24,6 +22,14 @@ def testSetlistFm(artistName):
 
 
 def main():
+    config = Config.Config()
+
+    if config.checkKeys():
+        print("API keys loaded OK, we're all set.")
+    else:
+        print("API keys not loaded. Terminating the bot.")
+        return
+
     botHandler = Telegram.TelegramHandler(config.telegramKey)
 
     # Ignoring all pending updates before the start of the bot
