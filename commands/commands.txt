@@ -1,0 +1,3 @@
+help - simple help on commands and features
+setlist - get the setlist of an artist
+whatsnew - changelog of the most recent updates
