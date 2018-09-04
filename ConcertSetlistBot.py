@@ -11,6 +11,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
+# noinspection PyUnusedLocal
 def startCommandHandler(bot, update):
     startMessage = "Bot Started. Please send in the name of the artist or use the /help command"
     update.message.reply_text(startMessage)
@@ -33,6 +34,11 @@ def artistNameHandler(bot, update):
         setlistParams = Setlist.SetlistParams(update.message.text)
         artistSetlists = Setlist.Setlists(setlistParams.artist, config)
 
+        if update.message.from_user is not None:
+            logger.info('Setlist for "%s" requested by "%s"', setlistParams.artist, update.message.from_user)
+        else:
+            logger.info('Setlist for "%s" requested by unknown user', setlistParams.artist)
+
         if artistSetlists.code == 0:
             setlistsToDisplay = artistSetlists.getMostRecentSetlists(setlistParams.count)
 
@@ -48,6 +54,7 @@ def artistNameHandler(bot, update):
         update.message.reply_text("Nothing to look for")
 
 
+# noinspection PyUnusedLocal
 def errorHandler(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
@@ -56,9 +63,9 @@ def main():
     updater = Updater(config.telegramKey)
 
     if config.checkKeys():
-        print("API keys loaded OK, we're all set.")
+        logger.info("API keys loaded OK, we're all set.")
     else:
-        print("API keys not loaded. Terminating the bot.")
+        logger.error("API keys not loaded. Terminating the bot.")
         return
 
     updater.dispatcher.add_handler(CommandHandler("start", startCommandHandler))
@@ -69,6 +76,7 @@ def main():
 
     updater.start_polling()
     updater.idle()
+
 
 if __name__ == '__main__':
     main()
