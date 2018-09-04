@@ -2,8 +2,22 @@ import json
 import requests
 
 
-class SetlistSong:
+class SetlistParams:
+    def __init__(self, params):
+        self.artist = params
+        self.count = 1
+        paramsList = params.split(' +')
 
+        if len(paramsList) == 2:
+            # noinspection PyBroadException
+            try:
+                self.count = int(paramsList[1]) + 1
+                self.artist = paramsList[0]
+            except:
+                pass
+
+
+class SetlistSong:
     def __init__(self, data, encore):
         self.name = data['name']
         self.encore = encore
@@ -49,7 +63,6 @@ class SetlistSong:
 
 
 class Setlist:
-
     def __init__(self, data, exactArtistName):
         self.eventDate = data['eventDate']
         self.artist = data['artist']['name']
@@ -139,7 +152,6 @@ class Setlist:
 
 
 class Setlists:
-
     def __init__(self, artistName, config):
         self.code = 0
         self.artistName = artistName

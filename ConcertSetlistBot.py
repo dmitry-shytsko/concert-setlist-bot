@@ -1,28 +1,59 @@
 import Config
 import Setlist
-import Telegram
+import logging
+
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 
-def testSetlistFm(artistName, config):
-    artistSetlists = Setlist.Setlists(artistName, config)
+config = Config.Config()
 
-    if artistSetlists.code == 0:
-        artistSetlist = artistSetlists.getMostRecentSetlist()
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-        if artistSetlist is None:
-            print("None Found")
+
+def startCommandHandler(bot, update):
+    startMessage = "Bot Started. Please send in the name of the artist or use the /help command"
+    update.message.reply_text(startMessage)
+
+
+def helpCommandHandler(bot, update):
+    helpFile = open("help.html", "r")
+    bot.send_message(update.message.chat_id, helpFile.read(), "HTML")
+    helpFile.close()
+
+
+def whatsNewCommandHandler(bot, update):
+    whatsNewFile = open("whatsnew.html", "r")
+    bot.send_message(update.message.chat_id, whatsNewFile.read(), "HTML")
+    whatsNewFile.close()
+
+
+def artistNameHandler(bot, update):
+    if update.message.text is not None and len(update.message.text) > 0:
+        setlistParams = Setlist.SetlistParams(update.message.text)
+        artistSetlists = Setlist.Setlists(setlistParams.artist, config)
+
+        if artistSetlists.code == 0:
+            setlistsToDisplay = artistSetlists.getMostRecentSetlists(setlistParams.count)
+
+            if len(setlistsToDisplay) > 0:
+                setlistsToDisplayIterator = iter(setlistsToDisplay)
+                for setlistToDisplay in setlistsToDisplayIterator:
+                    bot.send_message(update.message.chat_id, setlistToDisplay.setlistAsHtml(), "HTML")
+            else:
+                update.message.reply_text("None Found")
         else:
-            artistSetlist.displaySetlist()
+            update.message.reply_text(artistSetlists.status)
     else:
-        print(artistSetlists.status)
+        update.message.reply_text("Nothing to look for")
 
-# Uncomment this to test the setlist.fm integration
-# Iron Maiden is a good example of the band with a complex setlist (intros, covers, encores)
-# testSetlistFm("Iron Maiden")
+
+def errorHandler(bot, update, error):
+    logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def main():
-    config = Config.Config()
+    updater = Updater(config.telegramKey)
 
     if config.checkKeys():
         print("API keys loaded OK, we're all set.")
@@ -30,72 +61,14 @@ def main():
         print("API keys not loaded. Terminating the bot.")
         return
 
-    botHandler = Telegram.TelegramHandler(config.telegramKey)
+    updater.dispatcher.add_handler(CommandHandler("start", startCommandHandler))
+    updater.dispatcher.add_handler(CommandHandler("help", helpCommandHandler))
+    updater.dispatcher.add_handler(CommandHandler("whatsnew", whatsNewCommandHandler))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, artistNameHandler))
+    updater.dispatcher.add_error_handler(errorHandler)
 
-    # Ignoring all pending updates before the start of the bot
-    lastUpdate = botHandler.get_last_update()
-    new_offset = None
-
-    if lastUpdate is not None:
-        lastUpdateId = lastUpdate['update_id']
-        new_offset = lastUpdateId + 1
-
-    while True:
-        updates = botHandler.get_updates(new_offset)
-
-        updatesIterator = iter(updates)
-        for update in updatesIterator:
-            chatId = update['message']['chat']['id']
-            message = update['message']['text'].strip()
-            lastUpdateId = update['update_id']
-            new_offset = lastUpdateId + 1
-
-            if message is None or len(message) == 0:
-                continue
-
-            if message[0] == '/':
-                if message.lower() == '/start':
-                    botHandler.send_message(chatId, "Bot Started. Please send in the name of the artist or use "\
-                                                    "the /help command")
-                elif message.lower() == '/help':
-                    helpFile = open("help.html", "r")
-                    botHandler.send_message(chatId, helpFile.read())
-                    helpFile.close()
-                elif message.lower() == '/whatsnew':
-                    helpFile = open("whatsnew.html", "r")
-                    botHandler.send_message(chatId, helpFile.read())
-                    helpFile.close()
-                else:
-                    botHandler.send_message(chatId, "Sorry, this is an unknown command...")
-            else:
-                print(message)
-
-                artistName = message
-                setlistCount = 1
-                params = message.split(' +')
-
-                if len(params) == 2:
-                    # noinspection PyBroadException
-                    try:
-                        setlistCount = int(params[1]) + 1
-                        artistName = params[0]
-                    except:
-                        pass
-
-                artistSetlists = Setlist.Setlists(artistName, config)
-
-                if artistSetlists.code == 0:
-                    setlistsToDisplay = artistSetlists.getMostRecentSetlists(setlistCount)
-
-                    if len(setlistsToDisplay) > 0:
-                        setlistsToDisplayIterator = iter(setlistsToDisplay)
-                        for setlistToDisplay in setlistsToDisplayIterator:
-                            botHandler.send_message(chatId, setlistToDisplay.setlistAsHtml())
-                    else:
-                        botHandler.send_message(chatId, "None Found")
-                else:
-                    botHandler.send_message(chatId, artistSetlists.status)
-
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
     main()

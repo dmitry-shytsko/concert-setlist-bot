@@ -1,15 +1,16 @@
 import json
 import os
 
+
 class Config:
     def __init__(self):
         configFile = open("conf.json", "r")
         configJson = json.loads(configFile.read())
         configFile.close()
 
-        devMode = int(configJson["devMode"])
+        self.devMode = int(configJson["devMode"])
 
-        configDict = configJson["devConfig"] if devMode > 0 else configJson["prodConfig"]
+        configDict = configJson["devConfig"] if self.devMode > 0 else configJson["prodConfig"]
 
         self.setlistFmKey = None
         self.telegramKey = None
