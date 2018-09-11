@@ -14,6 +14,10 @@ class Config:
 
         self.setlistFmKey = None
         self.telegramKey = None
+        self.botOwner = None
+
+        if "botOwner" in configJson:
+            self.botOwner = configJson["botOwner"]
 
         if "setlistFmKey" in configDict:
             self.setlistFmKey = configDict["setlistFmKey"]
@@ -26,6 +30,21 @@ class Config:
 
         if self.telegramKey is None:
             self.telegramKey = os.getenv("TELEGRAM_KEY")
+
+        if self.botOwner is None:
+            self.botOwner = os.getenv("BOT_OWNER")
+
+    def checkBotOwner(self, user):
+        if self.botOwner is None:
+            return False
+
+        if user is None:
+            return False
+
+        if user.username is None:
+            return False
+
+        return user.username == self.botOwner
 
     def checkKeys(self):
         if self.setlistFmKey is None:
