@@ -1,11 +1,13 @@
 import Config
 import Setlist
+import Stats
 import logging
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 
 config = Config.Config()
+stats = Stats.Stats()
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,6 +31,11 @@ def whatsNewCommandHandler(bot, update):
     whatsNewFile.close()
 
 
+def statsCommandHandler(bot, update):
+    if config.checkBotOwner(update.message.from_user):
+        update.message.reply_text(stats.getStats())
+
+
 def setlistCommandHandler(bot, update):
     entities = update.message.parse_entities()
 
@@ -44,7 +51,7 @@ def setlistCommandHandler(bot, update):
             else:
                 update.message.reply_text("/setlist command has to be followed by the artist name")
 
-            return 
+            return
 
     update.message.reply_text("None Found")
 
@@ -59,6 +66,8 @@ def artistNameHandler(bot, update):
 def processSetlistRequest(request, bot, update):
     setlistParams = Setlist.SetlistParams(request)
     artistSetlists = Setlist.Setlists(setlistParams.artist, config)
+
+    stats.recordStats(update.message.from_user)
 
     if update.message.from_user is not None:
         logger.info('Setlist for "%s" requested by "%s"', setlistParams.artist, update.message.from_user)
@@ -96,6 +105,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler("help", helpCommandHandler))
     updater.dispatcher.add_handler(CommandHandler("whatsnew", whatsNewCommandHandler))
     updater.dispatcher.add_handler(CommandHandler("setlist", setlistCommandHandler))
+    updater.dispatcher.add_handler(CommandHandler("stats", statsCommandHandler))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, artistNameHandler))
     updater.dispatcher.add_error_handler(errorHandler)
 
