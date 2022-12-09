@@ -93,7 +93,7 @@ def errorHandler(bot, update, error):
 
 
 def main():
-    updater = Updater(config.telegramKey)
+    updater = Updater(config.telegramKey, use_context=False)
 
     if config.checkKeys():
         logger.info("API keys loaded OK, we're all set.")
